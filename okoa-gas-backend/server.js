@@ -7,6 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const paymentStore = {};
+
 // ========== M-PESA CONFIGURATION ==========
 const CONSUMER_KEY = process.env.CONSUMER_KEY;
 const CONSUMER_SECRET = process.env.CONSUMER_SECRET;
@@ -95,6 +97,13 @@ app.post('/api/mpesa/callback', (req, res) => {
             CallbackMetadata.Item.forEach(item => {
                 metadata[item.Name] = item.Value;
             });
+            const checkoutRequestID = metadata.CheckoutRequestID;
+            if (checkoutRequestID && paymentStore[checkoutRequestID]) {
+                paymentStore[checkoutRequestID].status = 'SUCCESS';
+                paymentStore[checkoutRequestID].receipt = metadata.MpesaReceiptNumber;
+                paymentStore[checkoutRequestID].phone = metadata.PhoneNumber;
+                paymentStore[checkoutRequestID].amount = metadata.Amount;
+            }
             
             console.log('✅ Payment successful!', {
                 amount: metadata.Amount,
@@ -104,6 +113,17 @@ app.post('/api/mpesa/callback', (req, res) => {
             
             // Update your database here
         } else {
+            const metadata = {};
+            if (CallbackMetadata && Array.isArray(CallbackMetadata.Item)) {
+                CallbackMetadata.Item.forEach(item => {
+                    metadata[item.Name] = item.Value;
+                });
+            }
+            const checkoutRequestID = metadata.CheckoutRequestID;
+            if (checkoutRequestID && paymentStore[checkoutRequestID]) {
+                paymentStore[checkoutRequestID].status = 'FAILED';
+                paymentStore[checkoutRequestID].failureReason = ResultDesc;
+            }
             console.log('❌ Payment failed:', ResultDesc);
         }
     }
@@ -134,6 +154,14 @@ app.post('/api/mpesa/pay', async (req, res) => {
         const response = await stkPush(phoneNumber, amount, accountReference, description);
         
         if (response.ResponseCode === '0') {
+            paymentStore[response.CheckoutRequestID] = {
+                phoneNumber,
+                amount,
+                accountReference,
+                description,
+                status: 'PENDING',
+                createdAt: Date.now()
+            };
             res.json({
                 success: true,
                 message: 'STK Push sent! Check your phone for M-PESA prompt.',
@@ -157,6 +185,34 @@ app.post('/api/mpesa/pay', async (req, res) => {
 // API Endpoint: Check Payment Status
 app.post('/api/mpesa/status', async (req, res) => {
     const { checkoutRequestID } = req.body;
+    if (!checkoutRequestID) {
+        return res.status(400).json({ error: 'checkoutRequestID is required' });
+    }
+
+    const stored = paymentStore[checkoutRequestID];
+    if (stored) {
+        if (stored.status === 'SUCCESS') {
+            return res.json({
+                ResultCode: 0,
+                ResultDesc: 'Payment confirmed by callback',
+                checkoutRequestID,
+                amount: stored.amount,
+                phone: stored.phone,
+                receipt: stored.receipt,
+                source: 'callback'
+            });
+        }
+        if (stored.status === 'FAILED') {
+            return res.json({
+                ResultCode: 1,
+                ResultDesc: stored.failureReason || 'Payment failed',
+                checkoutRequestID,
+                amount: stored.amount,
+                phone: stored.phone,
+                source: 'callback'
+            });
+        }
+    }
     const token = await getAccessToken();
     
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
