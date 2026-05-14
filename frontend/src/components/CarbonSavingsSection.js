@@ -1,8 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const CarbonSavingsSection = ({ screenSize, theme }) => {
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [meals, setMeals] = useState(2);
   const [household, setHousehold] = useState(4);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Calculations based on realistic data
   const charcoalCostPerMeal = 200; // KES per meal
@@ -15,6 +34,7 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
 
   return (
     <div
+      ref={sectionRef}
       style={{
         background: 'white',
         padding: screenSize.isMobile ? '3rem 1rem' : '4rem 2rem',
@@ -28,7 +48,10 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
           fontSize: screenSize.isMobile ? '2rem' : '2.5rem',
           color: theme.dark,
           marginBottom: '0.5rem',
-          fontWeight: '800'
+          fontWeight: '800',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+          transition: 'all 0.8s ease-out'
         }}
       >
         Carbon Savings Calculator
@@ -38,7 +61,10 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
           textAlign: 'center',
           color: theme.gray,
           marginBottom: '2.5rem',
-          fontSize: '1.05rem'
+          fontSize: '1.05rem',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.8s ease-out 0.2s'
         }}
       >
         See how much you save moving from charcoal to clean LPG
@@ -56,7 +82,11 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
             background: '#f8f9fa',
             borderRadius: '16px',
             padding: '2rem',
-            marginBottom: '2rem'
+            marginBottom: '2rem',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+            transition: 'all 0.8s ease-out 0.4s',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
           }}
         >
           <div
@@ -68,7 +98,13 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
             }}
           >
             {/* Meals Input */}
-            <div>
+            <div
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateX(0)' : 'translateX(-30px)',
+                transition: 'all 0.6s ease-out 0.5s'
+              }}
+            >
               <label
                 style={{
                   display: 'block',
@@ -88,11 +124,13 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
                 onChange={(e) => setMeals(parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  height: '6px',
-                  borderRadius: '3px',
-                  background: theme.primary,
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: `linear-gradient(to right, ${theme.primary} 0%, ${theme.primary} ${(meals - 1) * 11.1}%, #e9ecef ${(meals - 1) * 11.1}%, #e9ecef 100%)`,
                   outline: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                  appearance: 'none'
                 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.8rem', color: theme.gray }}>
@@ -102,7 +140,13 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
             </div>
 
             {/* Household Size Input */}
-            <div>
+            <div
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateX(0)' : 'translateX(30px)',
+                transition: 'all 0.6s ease-out 0.6s'
+              }}
+            >
               <label
                 style={{
                   display: 'block',
@@ -122,11 +166,13 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
                 onChange={(e) => setHousehold(parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  height: '6px',
-                  borderRadius: '3px',
-                  background: theme.primary,
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: `linear-gradient(to right, ${theme.primary} 0%, ${theme.primary} ${(household - 1) * 5.26}%, #e9ecef ${(household - 1) * 5.26}%, #e9ecef 100%)`,
                   outline: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                  appearance: 'none'
                 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.8rem', color: theme.gray }}>
@@ -152,7 +198,11 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
               borderRadius: '16px',
               padding: '2rem',
               color: 'white',
-              textAlign: 'center'
+              textAlign: 'center',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
+              transition: 'all 0.8s ease-out 0.7s',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
             }}
           >
             <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>ESTIMATED MONTHLY SAVINGS</div>
@@ -175,7 +225,11 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
               borderRadius: '16px',
               padding: '2rem',
               color: 'white',
-              textAlign: 'center'
+              textAlign: 'center',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
+              transition: 'all 0.8s ease-out 0.9s',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
             }}
           >
             <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>CO₂ PREVENTED PER MONTH</div>
@@ -199,7 +253,11 @@ const CarbonSavingsSection = ({ screenSize, theme }) => {
             borderRadius: '16px',
             padding: '1.5rem',
             marginTop: '2rem',
-            borderLeft: `4px solid #10b981`
+            borderLeft: `4px solid #10b981`,
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'all 0.8s ease-out 1.1s',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
           }}
         >
           <h4 style={{ color: '#10b981', marginBottom: '0.75rem', fontWeight: '700' }}>💚 Environmental Impact</h4>

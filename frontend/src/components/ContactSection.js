@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const ContactSection = ({ screenSize, theme, showMessage }) => {
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -12,6 +14,23 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Nairobi coordinates
   const coordinates = { lat: -1.286389, lng: 36.817223 };
@@ -73,6 +92,7 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
 
   return (
     <div
+      ref={sectionRef}
       style={{
         background: '#f8f9fa',
         padding: screenSize.isMobile ? '3rem 1rem' : '4rem 2rem',
@@ -86,7 +106,10 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
           fontSize: screenSize.isMobile ? '2rem' : '2.5rem',
           color: theme.dark,
           marginBottom: '0.5rem',
-          fontWeight: '800'
+          fontWeight: '800',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+          transition: 'all 0.8s ease-out'
         }}
       >
         Get in Touch
@@ -96,7 +119,10 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
           textAlign: 'center',
           color: theme.gray,
           marginBottom: '2.5rem',
-          fontSize: '1.05rem'
+          fontSize: '1.05rem',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.8s ease-out 0.2s'
         }}
       >
         Questions? We're here to help. Contact us anytime.
@@ -112,71 +138,44 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
         }}
       >
         {/* Contact Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Your Name *"
-            value={contactForm.name}
-            onChange={handleInputChange}
-            style={{
-              padding: '0.75rem',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              transition: 'border 0.3s ease'
-            }}
-            onFocus={(e) => (e.target.style.borderColor = theme.primary)}
-            onBlur={(e) => (e.target.style.borderColor = '#ddd')}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Your Email *"
-            value={contactForm.email}
-            onChange={handleInputChange}
-            style={{
-              padding: '0.75rem',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              transition: 'border 0.3s ease'
-            }}
-            onFocus={(e) => (e.target.style.borderColor = theme.primary)}
-            onBlur={(e) => (e.target.style.borderColor = '#ddd')}
-          />
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone Number (optional)"
-            value={contactForm.phone}
-            onChange={handleInputChange}
-            style={{
-              padding: '0.75rem',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              transition: 'border 0.3s ease'
-            }}
-            onFocus={(e) => (e.target.style.borderColor = theme.primary)}
-            onBlur={(e) => (e.target.style.borderColor = '#ddd')}
-          />
-          <input
-            type="text"
-            name="subject"
-            placeholder="Subject"
-            value={contactForm.subject}
-            onChange={handleInputChange}
-            style={{
-              padding: '0.75rem',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              transition: 'border 0.3s ease'
-            }}
-            onFocus={(e) => (e.target.style.borderColor = theme.primary)}
-            onBlur={(e) => (e.target.style.borderColor = '#ddd')}
-          />
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateX(0)' : 'translateX(-40px)',
+            transition: 'all 0.8s ease-out 0.4s'
+          }}
+        >
+          {['name', 'email', 'phone', 'subject'].map((field, idx) => (
+            <input
+              key={field}
+              type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'}
+              name={field}
+              placeholder={`Your ${field.charAt(0).toUpperCase() + field.slice(1)}${field === 'name' || field === 'email' || field === 'message' ? ' *' : ''}`}
+              value={contactForm[field]}
+              onChange={handleInputChange}
+              style={{
+                padding: '0.75rem',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                transition: 'all 0.3s ease',
+                opacity: isVisible ? 1 : 0,
+                animation: isVisible ? `fadeInUp 0.5s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = theme.primary;
+                e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#ddd';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          ))}
           <textarea
             name="message"
             placeholder="Your Message *"
@@ -189,11 +188,19 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
               borderRadius: '8px',
               fontSize: '1rem',
               fontFamily: 'inherit',
-              transition: 'border 0.3s ease',
-              resize: 'vertical'
+              transition: 'all 0.3s ease',
+              resize: 'vertical',
+              opacity: isVisible ? 1 : 0,
+              animation: isVisible ? `fadeInUp 0.5s ease-out 0.9s forwards` : 'none'
             }}
-            onFocus={(e) => (e.target.style.borderColor = theme.primary)}
-            onBlur={(e) => (e.target.style.borderColor = '#ddd')}
+            onFocus={(e) => {
+              e.target.style.borderColor = theme.primary;
+              e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#ddd';
+              e.target.style.boxShadow = 'none';
+            }}
           />
           <button
             type="submit"
@@ -208,128 +215,118 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
               fontSize: '1rem',
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               opacity: isSubmitting ? 0.7 : 1,
-              transition: 'all 0.3s ease'
+              transition: 'all 0.4s ease',
+              position: 'relative',
+              overflow: 'hidden',
+              opacity: isVisible ? 1 : 0,
+              animation: isVisible ? `fadeInUp 0.5s ease-out 1s forwards` : 'none'
             }}
-            onMouseEnter={(e) => !isSubmitting && (e.target.style.opacity = '0.9')}
-            onMouseLeave={(e) => !isSubmitting && (e.target.style.opacity = '1')}
+            onMouseEnter={(e) => !isSubmitting && (e.target.style.transform = 'translateY(-2px)')}
+            onMouseLeave={(e) => !isSubmitting && (e.target.style.transform = 'translateY(0)')}
           >
             {isSubmitting ? 'Sending...' : 'Send Message'}
           </button>
         </form>
 
         {/* Contact Info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div
-            style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              border: `2px solid ${theme.primary}20`
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: theme.primary, marginBottom: '0.75rem' }}>
-              📞 Phone
-            </h3>
-            <a
-              href="tel:+254717052939"
-              style={{
-                color: theme.gray,
-                textDecoration: 'none',
-                fontSize: '1rem'
-              }}
-            >
-              +254 717 052 939
-            </a>
-          </div>
-
-          <div
-            style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              border: `2px solid ${theme.primary}20`
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: theme.primary, marginBottom: '0.75rem' }}>
-              📧 Email
-            </h3>
-            <a
-              href="mailto:okoagas.energy@gmail.com"
-              style={{
-                color: theme.gray,
-                textDecoration: 'none',
-                fontSize: '1rem'
-              }}
-            >
-              okoagas.energy@gmail.com
-            </a>
-          </div>
-
-          <div
-            style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              border: `2px solid ${theme.primary}20`
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: theme.primary, marginBottom: '0.75rem' }}>
-              🕒 Business Hours
-            </h3>
-            <p style={{ color: theme.gray, fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Monday - Friday: 8:00 AM - 6:00 PM<br />
-              Saturday: 9:00 AM - 2:00 PM<br />
-              Sunday: Closed<br />
-              <span style={{ fontWeight: '700', color: theme.primary }}>24/7 Emergency Support</span>
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
-              borderRadius: '12px',
-              padding: '1.5rem',
-              color: 'white'
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.75rem' }}>
-              📍 Our Location
-            </h3>
-            <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-              Nairobi, Kenya
-            </p>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateX(0)' : 'translateX(40px)',
+            transition: 'all 0.8s ease-out 0.5s'
+          }}
+        >
+          {[
+            { title: '📞 Phone', value: '+254 717 052 939', link: 'tel:+254717052939', gradient: false },
+            { title: '📧 Email', value: 'okoagas.energy@gmail.com', link: 'mailto:okoagas.energy@gmail.com', gradient: false },
+            { title: '🕒 Business Hours', value: null, isHours: true, gradient: false },
+            { title: '📍 Our Location', value: 'Nairobi, Kenya', isLocation: true, gradient: true }
+          ].map((item, idx) => (
             <div
-              ref={mapRef}
+              key={idx}
               style={{
-                width: '100%',
-                height: '150px',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                marginTop: '0.5rem'
+                background: item.gradient
+                  ? `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`
+                  : 'white',
+                borderRadius: '12px',
+                padding: '1.5rem',
+                border: item.gradient ? 'none' : `2px solid ${theme.primary}20`,
+                color: item.gradient ? 'white' : 'inherit',
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+                transition: `all 0.6s ease-out ${0.6 + idx * 0.15}s`,
+                boxShadow: item.gradient ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 10px rgba(0,0,0,0.05)'
               }}
-            />
-            {!mapLoaded && (
-              <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.8)' }}>
-                Loading map...
-              </div>
-            )}
-          </div>
+            >
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: item.gradient ? 'white' : theme.primary, marginBottom: '0.75rem' }}>
+                {item.title}
+              </h3>
+              {item.isHours ? (
+                <p style={{ color: item.gradient ? 'white' : theme.gray, fontSize: '0.95rem', lineHeight: '1.6' }}>
+                  Monday - Friday: 8:00 AM - 6:00 PM<br />
+                  Saturday: 9:00 AM - 2:00 PM<br />
+                  Sunday: Closed<br />
+                  <span style={{ fontWeight: '700', color: theme.primary }}>24/7 Emergency Support</span>
+                </p>
+              ) : item.isLocation ? (
+                <>
+                  <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'white' }}>
+                    {item.value}
+                  </p>
+                  <div
+                    ref={mapRef}
+                    style={{
+                      width: '100%',
+                      height: '150px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      marginTop: '0.5rem'
+                    }}
+                  />
+                  {!mapLoaded && (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.8)' }}>
+                      Loading map...
+                    </div>
+                  )}
+                </>
+              ) : (
+                <a
+                  href={item.link}
+                  style={{
+                    color: item.gradient ? 'white' : theme.gray,
+                    textDecoration: 'none',
+                    fontSize: '1rem',
+                    display: 'block'
+                  }}
+                >
+                  {item.value}
+                </a>
+              )}
+            </div>
+          ))}
 
+          {/* Quick Links */}
           <div
             style={{
               background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
               borderRadius: '12px',
               padding: '1.5rem',
-              color: 'white'
+              color: 'white',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+              transition: `all 0.6s ease-out 1.2s`
             }}
           >
             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.75rem' }}>
               🚀 Quick Links
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.95rem' }}>
-              <a href="#home" style={{ color: 'white', textDecoration: 'none' }}>→ Home</a>
-              <a href="#features" style={{ color: 'white', textDecoration: 'none' }}>→ Features</a>
-              <a href="#safety" style={{ color: 'white', textDecoration: 'none' }}>→ Safety</a>
+              <a href="#home" style={{ color: 'white', textDecoration: 'none', display: 'block', transition: 'transform 0.2s' }}>→ Home</a>
+              <a href="#features" style={{ color: 'white', textDecoration: 'none', display: 'block', transition: 'transform 0.2s' }}>→ Features</a>
+              <a href="#safety" style={{ color: 'white', textDecoration: 'none', display: 'block', transition: 'transform 0.2s' }}>→ Safety</a>
             </div>
           </div>
         </div>

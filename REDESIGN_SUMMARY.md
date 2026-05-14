@@ -118,7 +118,7 @@ Your OKOA GAS app has been **completely redesigned and rebuilt** with a modern, 
 ## 📁 Project Structure
 
 ```
-okoa-gas-redesign/
+.
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -138,7 +138,7 @@ okoa-gas-redesign/
 │   │   └── App.css
 │   ├── public/
 │   └── package.json
-└── okoa-gas-backend/
+└── backend/
     └── server.js
 ```
 
@@ -148,7 +148,7 @@ okoa-gas-redesign/
 
 ### Start Development Server
 ```bash
-cd "~/Desktop/Attachment projects/okoa gas1/okoa-gas-redesign/frontend"
+cd "~/Desktop/Attachment projects/okoa gas1/frontend"
 npm start
 ```
 The app will open at `http://localhost:3000`

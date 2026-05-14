@@ -3,7 +3,7 @@
 ## 🚀 Start the App
 
 ```bash
-cd "/home/purry/Desktop/Attachment projects/okoa gas1/okoa-gas-redesign/frontend"
+cd "/home/purry/Desktop/Attachment projects/okoa gas1/frontend"
 npm start
 ```
 

@@ -31,5 +31,5 @@ frontend/.env
 frontend/.env.*
 
 # Backend
-okoa-gas-backend/.env
-okoa-gas-backend/.env.*
+backend/.env
+backend/.env.*
