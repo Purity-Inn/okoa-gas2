@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const ContactSection = ({ screenSize, theme, showMessage }) => {
   const [contactForm, setContactForm] = useState({
@@ -8,8 +8,47 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
     subject: '',
     message: ''
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  // Nairobi coordinates
+  const coordinates = { lat: -1.286389, lng: 36.817223 };
+
+  useEffect(() => {
+    if (!mapLoaded && !mapInstanceRef.current) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => {
+        setMapLoaded(true);
+      };
+      document.head.appendChild(script);
+    }
+  }, [mapLoaded]);
+
+  useEffect(() => {
+    if (mapLoaded && mapRef.current && !mapInstanceRef.current) {
+      mapInstanceRef.current = window.L.map(mapRef.current).setView(
+        [coordinates.lat, coordinates.lng],
+        13
+      );
+
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(mapInstanceRef.current);
+
+      window.L.marker([coordinates.lat, coordinates.lng])
+        .addTo(mapInstanceRef.current)
+        .bindPopup('OKOA GAS Headquarters<br>Nairobi, Kenya')
+        .openPopup();
+    }
+  }, [mapLoaded]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -226,46 +265,77 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
             </a>
           </div>
 
-          <div
-            style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              border: `2px solid ${theme.primary}20`
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: theme.primary, marginBottom: '0.75rem' }}>
-              🕒 Business Hours
-            </h3>
-            <p style={{ color: theme.gray, fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Monday - Friday: 8:00 AM - 6:00 PM<br />
-              Saturday: 9:00 AM - 2:00 PM<br />
-              Sunday: Closed<br />
-              <span style={{ fontWeight: '700', color: theme.primary }}>24/7 Emergency Support</span>
-            </p>
-          </div>
+<div
+             style={{
+               background: 'white',
+               borderRadius: '12px',
+               padding: '1.5rem',
+               border: `2px solid ${theme.primary}20`
+             }}
+           >
+             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: theme.primary, marginBottom: '0.75rem' }}>
+               🕒 Business Hours
+             </h3>
+             <p style={{ color: theme.gray, fontSize: '0.95rem', lineHeight: '1.6' }}>
+               Monday - Friday: 8:00 AM - 6:00 PM<br />
+               Saturday: 9:00 AM - 2:00 PM<br />
+               Sunday: Closed<br />
+               <span style={{ fontWeight: '700', color: theme.primary }}>24/7 Emergency Support</span>
+             </p>
+           </div>
 
-          <div
-            style={{
-              background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
-              borderRadius: '12px',
-              padding: '1.5rem',
-              color: 'white'
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.75rem' }}>
-              🚀 Quick Links
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.95rem' }}>
-              <a href="#home" style={{ color: 'white', textDecoration: 'none' }}>→ Home</a>
-              <a href="#features" style={{ color: 'white', textDecoration: 'none' }}>→ Features</a>
-              <a href="#safety" style={{ color: 'white', textDecoration: 'none' }}>→ Safety</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+           <div
+             style={{
+               background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
+               borderRadius: '12px',
+               padding: '1.5rem',
+               color: 'white'
+             }}
+           >
+             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.75rem' }}>
+               📍 Our Location
+             </h3>
+             <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+               Nairobi, Kenya
+             </p>
+             <div
+               ref={mapRef}
+               style={{
+                 width: '100%',
+                 height: '150px',
+                 borderRadius: '8px',
+                 overflow: 'hidden',
+                 marginTop: '0.5rem'
+               }}
+             />
+             {!mapLoaded && (
+               <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.8)' }}>
+                 Loading map...
+               </div>
+             )}
+           </div>
 
-export default ContactSection;
+           <div
+             style={{
+               background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
+               borderRadius: '12px',
+               padding: '1.5rem',
+               color: 'white'
+             }}
+           >
+             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.75rem' }}>
+               🚀 Quick Links
+             </h3>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.95rem' }}>
+               <a href="#home" style={{ color: 'white', textDecoration: 'none' }}>→ Home</a>
+               <a href="#features" style={{ color: 'white', textDecoration: 'none' }}>→ Features</a>
+               <a href="#safety" style={{ color: 'white', textDecoration: 'none' }}>→ Safety</a>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
+ };
+
+ export default ContactSection;
