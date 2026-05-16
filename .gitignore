@@ -29,6 +29,13 @@ yarn-error.log*
 # Frontend
 frontend/.env
 frontend/.env.*
+frontend/node_modules
+frontend/node_modules/
+frontend/build
+
+# cache
+**/.eslintcache
+**/node_modules/.cache
 
 # Backend
 backend/.env

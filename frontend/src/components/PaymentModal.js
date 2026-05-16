@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 
 const PaymentModal = ({
   showPaymentModal,
@@ -42,7 +43,7 @@ const PaymentModal = ({
     showMessage('Sending STK Push to your phone...', 'info');
 
     try {
-      const response = await fetch('/api/mpesa/pay', {
+      const response = await fetch(`${API_URL}/api/mpesa/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -83,7 +84,7 @@ const PaymentModal = ({
     if (!checkoutId) return;
 
     try {
-      const statusResponse = await fetch('/api/mpesa/status', {
+      const statusResponse = await fetch(`${API_URL}/api/mpesa/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ checkoutRequestID: checkoutId })
