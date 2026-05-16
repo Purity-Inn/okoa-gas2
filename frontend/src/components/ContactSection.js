@@ -214,11 +214,10 @@ const ContactSection = ({ screenSize, theme, showMessage }) => {
               fontWeight: '700',
               fontSize: '1rem',
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.7 : 1,
+              opacity: isSubmitting ? 0.7 : (isVisible ? 1 : 0),
               transition: 'all 0.4s ease',
               position: 'relative',
               overflow: 'hidden',
-              opacity: isVisible ? 1 : 0,
               animation: isVisible ? `fadeInUp 0.5s ease-out 1s forwards` : 'none'
             }}
             onMouseEnter={(e) => !isSubmitting && (e.target.style.transform = 'translateY(-2px)')}

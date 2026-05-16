@@ -103,7 +103,6 @@ const SafetySection = ({ screenSize, theme }) => {
             textAlign: 'center',
             fontSize: '1.05rem',
             marginBottom: '2.5rem',
-            opacity: 0.9,
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
             transition: 'all 0.8s ease-out 0.2s'
