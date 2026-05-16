@@ -1,5 +1,4 @@
 {
-  "framework": null,
   "builds": [
     {
       "src": "frontend/package.json",
